@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--扫描类注解生成javabean-->
+    <context:component-scan base-package="com.yh">
+        <!--处理Controller注解的类都扫描-->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!--spring整合mybatis  start-->
+
+    <!--引用properties文件-->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+    <!--配置数据源-->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driverClassName}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+
+    <!--创建sqlSessionFactory-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--注入数据源-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--配置映射文件路径-->
+        <property name="mapperLocations" value="classpath:com/yh/dao/*Mapper.xml"/>
+        <!--配置别名-->
+        <property name="typeAliasesPackage" value="com.yh.pojo"/>
+
+        <!--配置pagehelper插件-->
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <value>
+                            helperDialect=mysql
+                            reasonable=true
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+
+    <!--配置dao包扫描-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.yh.dao"/>
+    </bean>
+    <!--spring整合mybatis  end-->
+
+    <!--xml配置事务  start-->
+    <!--配置事务管理器-->
+    <!--<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">-->
+    <!--&lt;!&ndash;注入数据源&ndash;&gt;-->
+    <!--<property name="dataSource" ref="dataSource"/>-->
+    <!--</bean>-->
+    <!--&lt;!&ndash;配置事务的属性&ndash;&gt;-->
+    <!--<tx:advice id="txAdvice" transaction-manager="transactionManager">-->
+    <!--<tx:attributes>-->
+    <!--<tx:method name="*" isolation="DEFAULT" read-only="false" propagation="REQUIRED" />-->
+    <!--</tx:attributes>-->
+    <!--</tx:advice>-->
+    <!--<aop:config>-->
+    <!--&lt;!&ndash;定义切点&ndash;&gt;-->
+    <!--<aop:pointcut id="pt" expression="execution(* *..*.*ServiceImpl.*(..))"/>-->
+    <!--&lt;!&ndash;绑定切点与事务&ndash;&gt;-->
+    <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="pt"/>-->
+    <!--</aop:config>-->
+    <!--xml配置事务  end-->
+
+    <!--注解事务  start-->
+    <!--配置事务管理器-->
+    <!--<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">-->
+    <!--&lt;!&ndash;注入数据源&ndash;&gt;-->
+    <!--<property name="dataSource" ref="dataSource"/>-->
+    <!--</bean>-->
+    <!--&lt;!&ndash;开启对事务注解的支持&ndash;&gt;-->
+    <!--<tx:annotation-driven transaction-manager="transactionManager"/>-->
+    <!--此时只要在需要事务的方法或者类上加
+    @Transactional(isolation = Isolation.DEFAULT,readOnly = false,propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
+    注解即可-->
+    <!--注解事务  end-->
+
+    <!--xml配置aop   start-->
+    <!--<bean id="aop" class="com.yh.util.Aop_xml"/>-->
+    <!--<aop:config>-->
+    <!--&lt;!&ndash;配置切点&ndash;&gt;-->
+    <!--<aop:pointcut id="pt1" expression="execution(* *..*.*ServiceImpl.*(..))"/>-->
+    <!--<aop:aspect ref="aop">-->
+    <!--<aop:before method="before" pointcut-ref="pt1"/>-->
+    <!--<aop:after-returning method="afterReturning" pointcut-ref="pt1" returning="result"/>-->
+    <!--<aop:after-throwing method="afterThrowing" pointcut-ref="pt1" throwing="ex"/>-->
+    <!--<aop:after method="after" pointcut-ref="pt1"/>-->
+    <!--</aop:aspect>-->
+    <!--</aop:config>-->
+    <!--xml配置aop   end-->
+
+
+    <!--注解配置aop   start-->
+    <!--<aop:aspectj-autoproxy/>-->
+    <!--配合Aop_anno类实现aop-->
+    <!--注解配置aop   end-->
+
+
+    <!--xml一起配置aop和事务  start-->
+    <!--配置事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!--注入数据源-->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--配置事务的属性-->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="*" isolation="DEFAULT" read-only="false" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <!--注入切面类-->
+    <bean id="aop" class="com.yh.util.Aop_xml"/>
+    <aop:config>
+        <!--定义切点-->
+        <aop:pointcut id="pt" expression="execution(* *..*.*ServiceImpl.*(..))"/>
+        <!--绑定切点与事务-->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pt"/>
+        <aop:aspect ref="aop">
+            <aop:before method="before" pointcut-ref="pt"/>
+            <aop:after-returning method="afterReturning" pointcut-ref="pt" returning="result"/>
+            <aop:after-throwing method="afterThrowing" pointcut-ref="pt" throwing="ex"/>
+            <aop:after method="after" pointcut-ref="pt"/>
+        </aop:aspect>
+    </aop:config>
+
+    <!--xml一起配置aop和事务  end-->
+
+</beans>

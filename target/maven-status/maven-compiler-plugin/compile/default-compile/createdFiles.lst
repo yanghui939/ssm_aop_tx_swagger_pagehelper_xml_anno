@@ -1,0 +1,8 @@
+com\yh\controller\UserController.class
+com\yh\dao\UserDao.class
+com\yh\pojo\User.class
+com\yh\config\SwaggerConfig.class
+com\yh\util\Aop_anno.class
+com\yh\service\UserService.class
+com\yh\service\impl\UserServiceImpl.class
+com\yh\util\Aop_xml.class
